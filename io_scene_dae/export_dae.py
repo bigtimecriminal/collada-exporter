@@ -212,8 +212,6 @@ class DaeExporter:
 
         imgid = self.new_id("image")
 
-        print("FOR: {}".format(imgpath))
-
         self.writel(S_IMGS, 1, "<image id=\"{}\" name=\"{}\">".format(
             imgid, image.name))
         self.writel(S_IMGS, 2, "<init_from>{}</init_from>".format(imgpath))
@@ -237,8 +235,10 @@ class DaeExporter:
         specular_tex = None
         emission_tex = None
         normal_tex = None
+        reflective_tex = None
         for i in range(len(material.texture_slots)):
             ts = material.texture_slots[i]
+
             if not ts:
                 continue
             if not ts.use:
@@ -272,8 +272,20 @@ class DaeExporter:
             self.writel(S_FX, 3, "</newparam>")
             sampler_table[i] = sampler_sid
 
-            if ts.use_map_color_diffuse and diffuse_tex is None:
-                diffuse_tex = sampler_sid
+
+#            print("ANTON: ts.use_map_color_diffuse ", ts.use_map_color_diffuse);
+#            print("ANTON: ts.use_map_color_spec ", ts.use_map_color_spec);
+#            print("ANTON: ts.use_map_emission ", ts.use_map_emission);
+#            print("ANTON: ts.use_map_normal ", ts.use_map_normal);
+#            print("ANTON: ts.use_map_reflect ", ts.use_map_reflect);
+            print("ANTON: ts.texture_coords test", ts.texture_coords, ts.texture_coords == "UV");
+
+            if ts.use_map_color_diffuse:
+                if ts.texture_coords == "UV" and diffuse_tex is None:
+                    diffuse_tex = sampler_sid
+                else:
+                    if ts.texture_coords == "REFLECTION" and reflective_tex is None:
+                        reflective_tex = sampler_sid
             if ts.use_map_color_spec and specular_tex is None:
                 specular_tex = sampler_sid
             if ts.use_map_emit and emission_tex is None:
@@ -328,8 +340,16 @@ class DaeExporter:
         self.writel(S_FX, 5, "</shininess>")
 
         self.writel(S_FX, 5, "<reflective>")
-        self.writel(S_FX, 6, "<color>{}</color>".format(
-            numarr_alpha(material.mirror_color)))
+#        self.writel(S_FX, 6, "<color>{}</color>".format(
+#            numarr_alpha(material.mirror_color)))
+        if reflective_tex is not None:
+            self.writel(
+                S_FX, 6,
+                "<texture texture=\"{}\" texcoord=\"CHANNEL1\"/>".format(
+                    reflective_tex))
+        else:
+            self.writel(S_FX, 6, "<color>{}</color>".format(
+                numarr_alpha(material.mirror_color)))
         self.writel(S_FX, 5, "</reflective>")
 
         if (material.use_transparency):
