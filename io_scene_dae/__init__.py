@@ -78,18 +78,18 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
         name="Tangent Arrays",
         description="Export Tangent and Binormal arrays "
                     "(for normalmapping).",
-        default=False,
+        default=True,
         )
     use_triangles = BoolProperty(
         name="Triangulate",
         description="Export Triangles instead of Polygons.",
-        default=False,
+        default=True,
         )
 
     use_copy_images = BoolProperty(
         name="Copy Images",
         description="Copy Images (create images/ subfolder)",
-        default=False,
+        default=True,
         )
     use_active_layers = BoolProperty(
         name="Active Layers",
