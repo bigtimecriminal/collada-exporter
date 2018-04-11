@@ -63,6 +63,11 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
         default={"EMPTY", "CAMERA", "LAMP", "ARMATURE", "MESH", "CURVE"},
         )
 
+    ranger_substitutions = BoolProperty(
+        name="Use Ranger Substitutions",
+        description="Substitute some values with ranger defaults.",
+        default=True,
+        )
     use_export_selected = BoolProperty(
         name="Selected Objects",
         description="Export only selected objects (and visible in active "

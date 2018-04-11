@@ -186,7 +186,7 @@ class DaeExporter:
                 imgpath = os.path.join("images", os.path.basename(imgpath))
             else:
                 img_tmp_path = image.filepath
-                if img_tmp_path.lower().endswith(bpy.path.extensions_image):
+                if img_tmp_path.lower().endswith(tuple(bpy.path.extensions_image)):
                     image.filepath = os.path.join(
                         basedir, os.path.basename(img_tmp_path))
                 else:
@@ -273,13 +273,6 @@ class DaeExporter:
             sampler_table[i] = sampler_sid
 
 
-#            print("ANTON: ts.use_map_color_diffuse ", ts.use_map_color_diffuse);
-#            print("ANTON: ts.use_map_color_spec ", ts.use_map_color_spec);
-#            print("ANTON: ts.use_map_emission ", ts.use_map_emission);
-#            print("ANTON: ts.use_map_normal ", ts.use_map_normal);
-#            print("ANTON: ts.use_map_reflect ", ts.use_map_reflect);
-            print("ANTON: ts.texture_coords test", ts.texture_coords, ts.texture_coords == "UV");
-
             if ts.use_map_color_diffuse:
                 if ts.texture_coords == "UV" and diffuse_tex is None:
                     diffuse_tex = sampler_sid
@@ -293,6 +286,14 @@ class DaeExporter:
             if ts.use_map_normal and normal_tex is None:
                 normal_tex = sampler_sid
 
+        diffuse_color_to_use = material.diffuse_color
+        specular_color_to_use = material.specular_color
+        
+        if self.config["ranger_substitutions"]:
+          if material.name == "foil_gold":
+            diffuse_color_to_use = [e/255.0 for e in [255.0,235.0,129.0]]
+            specular_color_to_use = [e/255.0 for e in [255.0,248.0,155.0]]
+        
         self.writel(S_FX, 3, "<technique sid=\"common\">")
         shtype = "blinn"
         self.writel(S_FX, 4, "<{}>".format(shtype))
@@ -305,7 +306,7 @@ class DaeExporter:
         else:
             # TODO: More accurate coloring, if possible
             self.writel(S_FX, 6, "<color>{}</color>".format(
-                numarr_alpha(material.diffuse_color, material.emit)))
+                numarr_alpha(diffuse_color_to_use, material.emit)))
         self.writel(S_FX, 5, "</emission>")
 
         self.writel(S_FX, 5, "<ambient>")
@@ -320,7 +321,7 @@ class DaeExporter:
                 .format(diffuse_tex))
         else:
             self.writel(S_FX, 6, "<color>{}</color>".format(numarr_alpha(
-                material.diffuse_color, material.diffuse_intensity)))
+                diffuse_color_to_use, material.diffuse_intensity)))
         self.writel(S_FX, 5, "</diffuse>")
 
         self.writel(S_FX, 5, "<specular>")
@@ -331,7 +332,7 @@ class DaeExporter:
                     specular_tex))
         else:
             self.writel(S_FX, 6, "<color>{}</color>".format(numarr_alpha(
-                material.specular_color, material.specular_intensity)))
+                specular_color_to_use, material.specular_intensity)))
         self.writel(S_FX, 5, "</specular>")
 
         self.writel(S_FX, 5, "<shininess>")
