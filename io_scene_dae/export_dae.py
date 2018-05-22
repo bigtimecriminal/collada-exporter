@@ -1052,6 +1052,8 @@ class DaeExporter:
         meshdata = self.export_mesh(node, armature)
         close_controller = False
 
+        node_is_root = node.name == "_root"
+
         if ("skin_id" in meshdata):
             close_controller = True
             self.writel(
@@ -1066,8 +1068,9 @@ class DaeExporter:
                     meshdata["morph_id"]))
             close_controller = True
         elif (armature is None):
-            self.writel(S_NODES, il, "<instance_geometry url=\"#{}\">".format(
-                meshdata["id"]))
+            if(not node_is_root):
+                self.writel(S_NODES, il, "<instance_geometry url=\"#{}\">".format(
+                    meshdata["id"]))
 
         if (len(meshdata["material_assign"]) > 0):
             self.writel(S_NODES, il + 1, "<bind_material>")
@@ -1084,7 +1087,8 @@ class DaeExporter:
         if (close_controller):
             self.writel(S_NODES, il, "</instance_controller>")
         else:
-            self.writel(S_NODES, il, "</instance_geometry>")
+            if(not node_is_root):
+                self.writel(S_NODES, il, "</instance_geometry>")
 
     def export_armature_bone(self, bone, il, si):
         is_ctrl_bone = (
